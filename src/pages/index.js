@@ -8,6 +8,7 @@ import Dexie from "dexie";
 import face from "./face.png";
 import mouth from "./mouth.png";
 import { Key, Row } from "../components/Keyboard";
+import globalState from "../state";
 
 const db = new Dexie("Button");
 
@@ -20,37 +21,26 @@ const SECOND_ROW = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const THIRD_ROW = ["z", "x", "c", "v", "b", "n", "m"];
 const ALL_KEYS = [...FIRST_ROW, ...SECOND_ROW, ...THIRD_ROW];
 
-const audioContext = new AudioContext();
-const analyser = audioContext.createScriptProcessor(4096, 1, 1);
-analyser.connect(audioContext.destination);
-let sourceNode;
-let mediaRecorder;
-let recording = false;
-let chunks = [];
-let globalPressedKeys = {};
-let lastRecordingURL;
-let lastRecordingBlob;
-let mouthPosition = 0;
-
 navigator.mediaDevices
   .getUserMedia({
     audio: true
   })
   .then(stream => {
-    mediaRecorder = new MediaRecorder(stream);
+    globalState.mediaRecorder = new MediaRecorder(stream);
 
-    console.log("avm");
-    mediaRecorder.ondataavailable = function(e) {
-      if (recording) {
-        chunks.push(e.data);
+    globalState.mediaRecorder.ondataavailable = function(e) {
+      if (globalState.recording) {
+        globalState.chunks.push(e.data);
       }
     };
 
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
-      chunks = [];
-      lastRecordingBlob = blob;
-      lastRecordingURL = window.URL.createObjectURL(blob);
+    globalState.mediaRecorder.onstop = () => {
+      const blob = new Blob(globalState.chunks, {
+        type: "audio/ogg; codecs=opus"
+      });
+      globalState.chunks = [];
+      globalState.lastRecordingBlob = blob;
+      globalState.lastRecordingURL = window.URL.createObjectURL(blob);
     };
   })
   .catch(err => console.error(err));
@@ -62,10 +52,10 @@ class Jorge extends React.Component {
 
     const update = () => {
       if (this.ref.current)
-        this.ref.current.style.transform = `translate(-50%, calc(-50% + ${mouthPosition}px))`;
+        this.ref.current.style.transform = `translate(-50%, calc(-50% + ${globalState.mouthPosition}px))`;
     };
 
-    analyser.onaudioprocess = e => {
+    globalState.analyser.onaudioprocess = e => {
       var int = e.inputBuffer.getChannelData(0);
       var out = e.outputBuffer.getChannelData(0);
 
@@ -73,7 +63,7 @@ class Jorge extends React.Component {
         out[i] = int[i];
 
         if (int[i] !== 0) {
-          mouthPosition = Math.abs(int[i]) * 100;
+          globalState.mouthPosition = Math.abs(int[i]) * 100;
           window.requestAnimationFrame(update);
         }
       }
@@ -100,7 +90,7 @@ class Jorge extends React.Component {
             width: "100%",
             top: "50%",
             left: "50%",
-            transform: `translate(-50%, calc(-50% + ${mouthPosition}px))`,
+            transform: `translate(-50%, calc(-50% + ${globalState.mouthPosition}px))`,
             transition: "all linear 0.3s",
             zIndex: 9
           }}
@@ -150,17 +140,17 @@ class Player extends React.Component {
   downHandler = ({ key }) => {
     const lowerKey = _.toLower(key);
     if (!_.includes(ALL_KEYS, lowerKey)) return;
-    if (globalPressedKeys[lowerKey]) return;
+    if (globalState.pressedKeys[lowerKey]) return;
 
     const anyPressed = _.reduce(
-      globalPressedKeys,
+      globalState.pressedKeys,
       (memo, value, tKey) => memo || (value && lowerKey !== tKey),
       false
     );
 
     if (anyPressed) return;
 
-    globalPressedKeys[lowerKey] = true;
+    globalState.pressedKeys[lowerKey] = true;
 
     this.setState({
       ...this.state,
@@ -170,36 +160,36 @@ class Player extends React.Component {
     if (lowerKey === key) {
       this.playClip(key);
     } else {
-      if (recording) return;
+      if (globalState.recording) return;
       console.log("recording");
-      mediaRecorder.start();
-      recording = true;
+      globalState.mediaRecorder.start();
+      globalState.recording = true;
     }
   };
 
   upHandler = ({ key }) => {
     const lowerKey = _.toLower(key);
     if (!_.includes(ALL_KEYS, lowerKey)) return;
-    if (!globalPressedKeys[lowerKey]) return;
+    if (!globalState.pressedKeys[lowerKey]) return;
 
-    globalPressedKeys[lowerKey] = false;
+    globalState.pressedKeys[lowerKey] = false;
 
     this.setState({
       ...this.state,
       pressedKeys: { ...this.state.pressedKeys, [lowerKey]: false }
     });
 
-    if (!recording) return;
+    if (!globalState.recording) return;
 
     console.log("saving recording");
     try {
-      mediaRecorder.stop();
+      globalState.mediaRecorder.stop();
     } catch (e) {
       console.warn(e);
     }
     setImmediate(() => {
       this.saveClip(lowerKey);
-      recording = false;
+      globalState.recording = false;
     });
   };
 
@@ -218,17 +208,21 @@ class Player extends React.Component {
   };
 
   saveClip = async key => {
-    if (!lastRecordingURL) return setImmediate(() => this.saveClip(key));
+    if (!globalState.lastRecordingURL)
+      return setImmediate(() => this.saveClip(key));
 
     this.setState({
-      recordings: { ...this.state.recordings, [key]: lastRecordingURL }
+      recordings: {
+        ...this.state.recordings,
+        [key]: globalState.lastRecordingURL
+      }
     });
 
-    lastRecordingURL = null;
+    globalState.lastRecordingURL = null;
 
     await db.keys.put({
       key,
-      blob: lastRecordingBlob
+      blob: globalState.lastRecordingBlob
     });
   };
 
@@ -238,25 +232,25 @@ class Player extends React.Component {
     if (!url) return;
 
     try {
-      if (sourceNode) {
-        sourceNode.stop();
-        sourceNode.disconnect(analyser);
+      if (globalState.sourceNode) {
+        globalState.sourceNode.stop();
+        globalState.sourceNode.disconnect(globalState.analyser);
       }
     } catch (e) {
       console.warn(e);
     }
 
-    sourceNode = audioContext.createBufferSource();
-    sourceNode.connect(analyser);
+    globalState.sourceNode = globalState.aud.ioContext.createBufferSource();
+    globalState.sourceNode.connect(globalState.analyser);
 
     const response = await this.loadSound(url);
 
-    audioContext.decodeAudioData(
+    globalState.audioContext.decodeAudioData(
       response,
       buffer => {
-        sourceNode.buffer = buffer;
-        sourceNode.loop = false;
-        sourceNode.start(0);
+        globalState.sourceNode.buffer = buffer;
+        globalState.sourceNode.loop = false;
+        globalState.sourceNode.start(0);
       },
       err => console.error(err)
     );
