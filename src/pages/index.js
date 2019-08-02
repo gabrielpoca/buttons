@@ -290,47 +290,63 @@ export default () => {
               }
             `}
           />
-          <div
-            css={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "flex-start",
-              flexDirection: "column"
-            }}
-          >
-            <Row>
-              {FIRST_ROW.map((key, index) => (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div
+              css={{
+                padding: 40,
+                display: "flex",
+                justifyContent: "flex-start",
+                alignItems: "flex-start",
+                flexDirection: "column"
+              }}
+            >
+              <Row>
+                {FIRST_ROW.map((key, index) => (
+                  <Key
+                    selected={pressedKeys[key]}
+                    hasRecording={!!recordings[key]}
+                    key={key}
+                    leftMargin={index !== 0}
+                    keycode={key}
+                  />
+                ))}
+              </Row>
+              <Row css={{ marginLeft: 20, marginTop: 10 }}>
+                {SECOND_ROW.map((key, index) => (
+                  <Key
+                    selected={pressedKeys[key]}
+                    hasRecording={!!recordings[key]}
+                    key={key}
+                    leftMargin={index !== 0}
+                    keycode={key}
+                  />
+                ))}
+              </Row>
+              <Row
+                css={{ marginLeft: 50, marginTop: 10, position: "relative" }}
+              >
+                {THIRD_ROW.map((key, index) => (
+                  <Key
+                    selected={pressedKeys[key]}
+                    key={key}
+                    hasRecording={!!recordings[key]}
+                    leftMargin={index !== 0}
+                    keycode={key}
+                  />
+                ))}
                 <Key
-                  selected={pressedKeys[key]}
-                  hasRecording={!!recordings[key]}
-                  key={key}
-                  leftMargin={index !== 0}
-                  keycode={key}
+                  css={{
+                    width: 100,
+                    position: "absolute",
+                    left: "0",
+                    transform: "translateX(calc(-100% - 10px))"
+                  }}
+                  selected={false}
+                  hasRecording={false}
+                  keycode="Shift"
                 />
-              ))}
-            </Row>
-            <Row css={{ marginLeft: 20, marginTop: 10 }}>
-              {SECOND_ROW.map((key, index) => (
-                <Key
-                  selected={pressedKeys[key]}
-                  hasRecording={!!recordings[key]}
-                  key={key}
-                  leftMargin={index !== 0}
-                  keycode={key}
-                />
-              ))}
-            </Row>
-            <Row css={{ marginLeft: 50, marginTop: 10 }}>
-              {THIRD_ROW.map((key, index) => (
-                <Key
-                  selected={pressedKeys[key]}
-                  key={key}
-                  hasRecording={!!recordings[key]}
-                  leftMargin={index !== 0}
-                  keycode={key}
-                />
-              ))}
-            </Row>
+              </Row>
+            </div>
           </div>
           <Jorge />
         </div>
