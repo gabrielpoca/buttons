@@ -3,25 +3,20 @@
 import _ from "lodash";
 import React from "react";
 import { Global, css, jsx } from "@emotion/core";
-import Dexie from "dexie";
 
 import face from "./face.png";
 import mouth from "./mouth.png";
 import { Key, Row } from "../components/Keyboard";
 import globalState from "../state";
-
-const db = new Dexie("Button");
-
-db.version(1).stores({
-  keys: "key"
-});
+import db from "../db";
+import { share, download } from "../ipfs";
 
 const FIRST_ROW = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
 const SECOND_ROW = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const THIRD_ROW = ["z", "x", "c", "v", "b", "n", "m"];
 const ALL_KEYS = [...FIRST_ROW, ...SECOND_ROW, ...THIRD_ROW];
 
-navigator.mediaDevices
+window.navigator.mediaDevices
   .getUserMedia({
     audio: true
   })
@@ -119,6 +114,8 @@ class Player extends React.Component {
 
     try {
       const keys = await db.keys.toArray();
+
+      console.log(keys);
 
       this.setState({
         recordings: keys.reduce((memo, key) => {
@@ -276,7 +273,7 @@ export default () => {
               html,
               body {
                 background-color: white;
-                color: #1B1B1B;
+                color: #1b1b1b;
                 font-size: 18;
                 line-height: 1;
                 font-family: Arial;
@@ -287,9 +284,7 @@ export default () => {
               }
             `}
           />
-          <h1>
-            Push to Talk
-          </h1>
+          <h1>Push to Talk</h1>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               css={{
@@ -353,6 +348,21 @@ export default () => {
             </div>
           </div>
           <Jorge />
+          <button
+            onClick={() =>
+              share().then(hash => alert(`Share this link ${hash}`))
+            }
+          >
+            Share
+          </button>
+          <button
+            onClick={() => {
+              const hash = prompt("PAST YOUR HASH");
+              download(hash);
+            }}
+          >
+            Download
+          </button>
         </div>
       )}
     </Player>

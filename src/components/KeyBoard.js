@@ -10,10 +10,10 @@ export const Key = ({ leftMargin, selected, hasRecording, isRecording, ...props 
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: selected && isRecording 
+      background: selected && isRecording
       ? "#E24E4E"
-      : hasRecording 
-      ? "#0078F0" 
+      : hasRecording
+      ? "#0078F0"
       : "#2D2D2D",
       boxShadow: hasRecording ? "0px 12px 20px rgba(0, 120, 240, 0.28)" : "0px 8px 20px rgba(22, 22, 22, 0.28)",
       boxSizing: "border-box",

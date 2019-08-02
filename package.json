@@ -6,6 +6,7 @@
     "@emotion/core": "^10.0.14",
     "@emotion/styled": "^10.0.14",
     "babel-plugin-emotion": "^10.0.14",
+    "blob-to-buffer": "^1.2.8",
     "dexie": "^2.0.4",
     "ipfs": "^0.36.4",
     "lodash": "^4.17.14",
