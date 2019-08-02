@@ -273,7 +273,7 @@ export default () => {
               html,
               body {
                 background-color: white;
-                color: black;
+                color: #1B1B1B;
                 font-size: 18;
                 line-height: 1;
                 font-family: Arial;
@@ -284,6 +284,9 @@ export default () => {
               }
             `}
           />
+          <h1>
+            Push to Talk
+          </h1>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               css={{
