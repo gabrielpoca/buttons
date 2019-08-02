@@ -7,7 +7,7 @@ import Dexie from "dexie";
 
 import face from "./face.png";
 import mouth from "./mouth.png";
-import { Key, Row } from "../components/KeyBoard";
+import { Key, Row } from "../components/Keyboard";
 
 const db = new Dexie("Button");
 
