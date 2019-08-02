@@ -6,7 +6,7 @@ import { Global, css, jsx } from "@emotion/core";
 
 import face from "./face.png";
 import mouth from "./mouth.png";
-import { Key, Row } from "../components/Keyboard";
+import { Key, Row } from "../components/Keys";
 import globalState from "../state";
 import db from "../db";
 import { share, download } from "../ipfs";
@@ -152,7 +152,7 @@ class Player extends React.Component {
 
     this.setState({
       ...this.state,
-      recording: {...this.state.recording},
+      recording: { ...this.state.recording },
       pressedKeys: { ...this.state.pressedKeys, [lowerKey]: true }
     });
 
@@ -175,7 +175,7 @@ class Player extends React.Component {
 
     this.setState({
       ...this.state,
-      recording: {...this.state.recording},
+      recording: { ...this.state.recording },
       pressedKeys: { ...this.state.pressedKeys, [lowerKey]: false }
     });
 
