@@ -8,8 +8,8 @@ const state = {
   sourceNode: null,
   mediaRecorder: null,
   recording: null,
-  chunks: null,
-  pressedKeys: null,
+  chunks: [],
+  pressedKeys: {},
   lastRecordingURL: null,
   lastRecordingBlob: null,
   mouthPosition: 0

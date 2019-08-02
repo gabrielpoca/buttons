@@ -10,13 +10,11 @@ export const Key = ({ leftMargin, selected, hasRecording, isRecording, ...props 
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      if(isRecording) {
-        background: "#E24E4E",
-      } else if (hasRecording) {
-        background: "#0078F0",
-      } else {
-        background: "#2D2D2D;",
-      }
+      background: selected && isRecording 
+      ? "#E24E4E"
+      : hasRecording 
+      ? "#0078F0" 
+      : "#2D2D2D",
       boxShadow: hasRecording ? "0px 12px 20px rgba(0, 120, 240, 0.28)" : "0px 8px 20px rgba(22, 22, 22, 0.28)",
       boxSizing: "border-box",
       borderRadius: 8,
@@ -26,7 +24,7 @@ export const Key = ({ leftMargin, selected, hasRecording, isRecording, ...props 
     }}
     {...props}
   >
-    <span css={{ color: selected ? "black" : "white" }}>{props.keycode}</span>
+    <span>{props.keycode}</span>
   </div>
 );
 

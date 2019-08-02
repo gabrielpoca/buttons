@@ -107,6 +107,7 @@ class Player extends React.Component {
 
     this.state = {
       pressedKeys: {},
+      isRecording: false,
       recordings: {},
       loading: true
     };
@@ -240,7 +241,7 @@ class Player extends React.Component {
       console.warn(e);
     }
 
-    globalState.sourceNode = globalState.aud.ioContext.createBufferSource();
+    globalState.sourceNode = globalState.audioContext.createBufferSource();
     globalState.sourceNode.connect(globalState.analyser);
 
     const response = await this.loadSound(url);
@@ -266,7 +267,7 @@ class Player extends React.Component {
 export default () => {
   return (
     <Player>
-      {({ pressedKeys, recordings }) => (
+      {({ pressedKeys, isRecording, recordings }) => (
         <div>
           <Global
             styles={css`
@@ -302,6 +303,7 @@ export default () => {
                   <Key
                     selected={pressedKeys[key]}
                     hasRecording={!!recordings[key]}
+                    isRecording={isRecording}
                     key={key}
                     leftMargin={index !== 0}
                     keycode={key}
@@ -313,6 +315,7 @@ export default () => {
                   <Key
                     selected={pressedKeys[key]}
                     hasRecording={!!recordings[key]}
+                    isRecording={isRecording}
                     key={key}
                     leftMargin={index !== 0}
                     keycode={key}
@@ -327,6 +330,7 @@ export default () => {
                     selected={pressedKeys[key]}
                     key={key}
                     hasRecording={!!recordings[key]}
+                    isRecording={isRecording}
                     leftMargin={index !== 0}
                     keycode={key}
                   />
