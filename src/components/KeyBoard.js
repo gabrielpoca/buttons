@@ -21,6 +21,7 @@ export const Key = ({ leftMargin, selected, hasRecording, isRecording, ...props 
       color: "#FFF",
       marginLeft: leftMargin ? 10 : 0,
       position: "relative",
+      textTransform: "uppercase",
     }}
     {...props}
   >

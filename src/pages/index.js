@@ -107,7 +107,7 @@ class Player extends React.Component {
 
     this.state = {
       pressedKeys: {},
-      isRecording: false,
+      recording: false,
       recordings: {},
       loading: true
     };
@@ -155,6 +155,7 @@ class Player extends React.Component {
 
     this.setState({
       ...this.state,
+      recording: {...this.state.recording},
       pressedKeys: { ...this.state.pressedKeys, [lowerKey]: true }
     });
 
@@ -177,6 +178,7 @@ class Player extends React.Component {
 
     this.setState({
       ...this.state,
+      recording: {...this.state.recording},
       pressedKeys: { ...this.state.pressedKeys, [lowerKey]: false }
     });
 
@@ -267,7 +269,7 @@ class Player extends React.Component {
 export default () => {
   return (
     <Player>
-      {({ pressedKeys, isRecording, recordings }) => (
+      {({ pressedKeys, recording, recordings }) => (
         <div>
           <Global
             styles={css`
@@ -303,7 +305,7 @@ export default () => {
                   <Key
                     selected={pressedKeys[key]}
                     hasRecording={!!recordings[key]}
-                    isRecording={isRecording}
+                    isRecording={recording}
                     key={key}
                     leftMargin={index !== 0}
                     keycode={key}
@@ -315,7 +317,7 @@ export default () => {
                   <Key
                     selected={pressedKeys[key]}
                     hasRecording={!!recordings[key]}
-                    isRecording={isRecording}
+                    isRecording={recording}
                     key={key}
                     leftMargin={index !== 0}
                     keycode={key}
@@ -330,7 +332,7 @@ export default () => {
                     selected={pressedKeys[key]}
                     key={key}
                     hasRecording={!!recordings[key]}
-                    isRecording={isRecording}
+                    isRecording={recording}
                     leftMargin={index !== 0}
                     keycode={key}
                   />
@@ -344,6 +346,7 @@ export default () => {
                   }}
                   selected={false}
                   hasRecording={false}
+                  isRecording={false}
                   keycode="Shift"
                 />
               </Row>
