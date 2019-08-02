@@ -19,15 +19,7 @@ export const Key = ({ leftMargin, selected, hasRecording, ...props }) => (
     }}
     {...props}
   >
-    <span
-      css={{
-        position: "absolute",
-        top: 5,
-        left: 5
-      }}
-    >
-      {props.keycode}
-    </span>
+    <span css={{}}>{props.keycode}</span>
   </div>
 );
 

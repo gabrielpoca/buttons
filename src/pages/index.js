@@ -293,8 +293,8 @@ export default () => {
           <div
             css={{
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              justifyContent: "flex-start",
+              alignItems: "flex-start",
               flexDirection: "column"
             }}
           >
@@ -320,7 +320,7 @@ export default () => {
                 />
               ))}
             </Row>
-            <Row css={{ marginLeft: 40, marginTop: 10 }}>
+            <Row css={{ marginLeft: 50, marginTop: 10 }}>
               {THIRD_ROW.map((key, index) => (
                 <Key
                   selected={pressedKeys[key]}
