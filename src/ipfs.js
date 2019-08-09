@@ -63,8 +63,8 @@ export const download = async hash => {
     worker.addEventListener(
       "message",
       ({ data }) => {
+        console.log("cko asiasdfksadf");
         if (data.message === "download") {
-          window.location.reload();
           resolve();
         } else reject("invalid message received");
       },

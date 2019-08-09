@@ -1,10 +1,12 @@
 /** @jsx jsx */
 
 import _ from "lodash";
-import React from "react";
+import React, { useState } from "react";
 import { Global, css, jsx } from "@emotion/core";
+import Popup from "reactjs-popup";
 
 import { Key, Row } from "../components/Keys";
+import { Jorge } from "../components/Jorge";
 import globalState from "../state";
 import db from "../db";
 import { share, download } from "../ipfs";
@@ -13,6 +15,8 @@ const FIRST_ROW = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
 const SECOND_ROW = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const THIRD_ROW = ["z", "x", "c", "v", "b", "n", "m"];
 const ALL_KEYS = [...FIRST_ROW, ...SECOND_ROW, ...THIRD_ROW];
+
+const hashInQueryParams = querystring("hash")[0];
 
 window.navigator.mediaDevices
   .getUserMedia({
@@ -37,6 +41,89 @@ window.navigator.mediaDevices
     };
   })
   .catch(err => console.error(err));
+
+function querystring(obj) {
+  const result = [];
+  let match;
+  const re = new RegExp("(?:\\?|&)" + obj + "=(.*?)(?=&|$)", "gi");
+  while ((match = re.exec(document.location.search)) !== null) {
+    result.push(match[1]);
+  }
+  return result;
+}
+
+function Share() {
+  const [hash, setHash] = useState(null);
+
+  return (
+    <Popup
+      trigger={
+        <button
+          css={{
+            backgroundColor: "black",
+            color: "white",
+            fontSize: 20,
+            padding: `10px 20px`,
+            borderRadius: 4
+          }}
+        >
+          Share with someone
+        </button>
+      }
+      modal
+      position="right center"
+      onOpen={() => share().then(hash => setHash(hash))}
+      contentStyle={{ padding: 40, borderRadius: 4 }}
+    >
+      <>
+        {hash ? (
+          <div>
+            Share this link:{" "}
+            <a
+              href={`${window.location}?hash=${hash}`}
+            >{`${window.location}?hash=${hash}`}</a>
+          </div>
+        ) : (
+          <div>loading...</div>
+        )}
+      </>
+    </Popup>
+  );
+}
+
+function Download() {
+  const [loading, setLoading] = useState(false);
+
+  const handleDownload = async () => {
+    setLoading(true);
+    await download(hashInQueryParams);
+    window.location = window.location.origin;
+  };
+
+  return hashInQueryParams ? (
+    <Popup contentStyle={{ padding: 40 }} modal open>
+      {loading ? (
+        <div>loading...</div>
+      ) : (
+        <>
+          <div css={{ marginBottom: 20 }}>
+            Do you want to replace your existing keyboard with the new one?
+          </div>
+          <button onClick={handleDownload} css={{ marginRight: 20 }}>
+            Yes!
+          </button>
+          <button
+            onClick={() => {
+              window.location = window.location.origin;
+            }}
+          >
+            No
+          </button>
+        </>
+      )}
+    </Popup>
+  ) : null;
+}
 
 class Player extends React.Component {
   constructor() {
@@ -224,6 +311,7 @@ export default () => {
               }
             `}
           />
+          <Download />
           <h1>Push to Talk</h1>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
@@ -287,21 +375,8 @@ export default () => {
               </Row>
             </div>
           </div>
-          <button
-            onClick={() =>
-              share().then(hash => alert(`Share this link ${hash}`))
-            }
-          >
-            Share
-          </button>
-          <button
-            onClick={() => {
-              const hash = prompt("PAST YOUR HASH");
-              download(hash);
-            }}
-          >
-            Download
-          </button>
+          <Jorge />
+          <Share />
         </div>
       )}
     </Player>

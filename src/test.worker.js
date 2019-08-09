@@ -79,6 +79,7 @@ async function handleDownload(hash) {
         hash
       };
     });
+
   await Promise.all(
     files.map(async file => {
       const gotFile = (await node.get(file.hash))[0];
