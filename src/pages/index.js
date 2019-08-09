@@ -4,8 +4,6 @@ import _ from "lodash";
 import React from "react";
 import { Global, css, jsx } from "@emotion/core";
 
-import face from "./face.png";
-import mouth from "./mouth.png";
 import { Key, Row } from "../components/Keys";
 import globalState from "../state";
 import db from "../db";
@@ -40,62 +38,6 @@ window.navigator.mediaDevices
   })
   .catch(err => console.error(err));
 
-class Jorge extends React.Component {
-  constructor() {
-    super();
-    this.ref = React.createRef();
-
-    const update = () => {
-      if (this.ref.current)
-        this.ref.current.style.transform = `translate(-50%, calc(-50% + ${globalState.mouthPosition}px))`;
-    };
-
-    globalState.analyser.onaudioprocess = e => {
-      var int = e.inputBuffer.getChannelData(0);
-      var out = e.outputBuffer.getChannelData(0);
-
-      for (var i = 0; i < int.length; i++) {
-        out[i] = int[i];
-
-        if (int[i] !== 0) {
-          globalState.mouthPosition = Math.abs(int[i]) * 100;
-          window.requestAnimationFrame(update);
-        }
-      }
-    };
-  }
-
-  shouldComponentUpdate() {
-    return false;
-  }
-
-  render() {
-    return (
-      <div css={{ position: "relative", width: 300 }}>
-        <img
-          css={{
-            width: "100%"
-          }}
-          src={face}
-        />
-        <img
-          ref={this.ref}
-          css={{
-            position: "absolute",
-            width: "100%",
-            top: "50%",
-            left: "50%",
-            transform: `translate(-50%, calc(-50% + ${globalState.mouthPosition}px))`,
-            transition: "all linear 0.3s",
-            zIndex: 9
-          }}
-          src={mouth}
-        />
-      </div>
-    );
-  }
-}
-
 class Player extends React.Component {
   constructor() {
     super();
@@ -114,8 +56,6 @@ class Player extends React.Component {
 
     try {
       const keys = await db.keys.toArray();
-
-      console.log(keys);
 
       this.setState({
         recordings: keys.reduce((memo, key) => {
@@ -347,7 +287,6 @@ export default () => {
               </Row>
             </div>
           </div>
-          <Jorge />
           <button
             onClick={() =>
               share().then(hash => alert(`Share this link ${hash}`))
