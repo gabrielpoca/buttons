@@ -12,6 +12,7 @@ const state = {
   pressedKeys: {},
   lastRecordingURL: null,
   lastRecordingBlob: null,
+  sharingFocused: false,
   mouthPosition: 0
 };
 

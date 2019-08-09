@@ -1,12 +1,13 @@
 /** @jsx jsx */
 
 import _ from "lodash";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Global, css, jsx } from "@emotion/core";
 import Popup from "reactjs-popup";
 
 import { Key, Row } from "../components/Keys";
 import { Jorge } from "../components/Jorge";
+import { KeyboardNameInput } from "../components/KeyboardNameInput";
 import globalState from "../state";
 import db from "../db";
 import { share, download } from "../ipfs";
@@ -53,7 +54,13 @@ function querystring(obj) {
 }
 
 function Share() {
-  const [hash, setHash] = useState(null);
+  const [state, setState] = useState({ hash: null, name: null });
+
+  useEffect(() => {
+    if (state.name && state.hash) {
+      db.keyboards.put(state);
+    }
+  }, [state]);
 
   return (
     <Popup
@@ -64,27 +71,43 @@ function Share() {
             color: "white",
             fontSize: 20,
             padding: `10px 20px`,
+            marginRight: 40,
             borderRadius: 4
           }}
         >
-          Share with someone
+          Save and Share
         </button>
       }
       modal
       position="right center"
-      onOpen={() => share().then(hash => setHash(hash))}
+      onOpen={() => {
+        globalState.sharingFocused = true;
+
+        share().then(async hash => {
+          await db.keyboards.put({ hash, name: "my random name" });
+          setState({ ...state, hash });
+        });
+      }}
+      onClose={() => {
+        globalState.sharingFocused = false;
+        setState({ hash: null, name: null });
+      }}
       contentStyle={{ padding: 40, borderRadius: 4 }}
     >
       <>
-        {hash ? (
+        {!state.name ? (
+          <KeyboardNameInput
+            onComplete={name => setState({ ...state, name })}
+          />
+        ) : !state.hash ? (
+          <div>loading...</div>
+        ) : (
           <div>
             Share this link:{" "}
             <a
-              href={`${window.location}?hash=${hash}`}
-            >{`${window.location}?hash=${hash}`}</a>
+              href={`${window.location}?hash=${state.hash}`}
+            >{`${window.location}?hash=${state.hash}`}</a>
           </div>
-        ) : (
-          <div>loading...</div>
         )}
       </>
     </Popup>
@@ -125,6 +148,52 @@ function Download() {
   ) : null;
 }
 
+function Keyboards() {
+  const [keyboards, setKeyboards] = useState([]);
+
+  const load = async () => {
+    const keyboards = await db.keyboards.toArray();
+    setKeyboards(keyboards);
+  };
+
+  return (
+    <Popup
+      trigger={
+        <button
+          css={{
+            backgroundColor: "black",
+            color: "white",
+            fontSize: 20,
+            padding: `10px 20px`,
+            marginRight: 40,
+            borderRadius: 4
+          }}
+        >
+          Your keyboards
+        </button>
+      }
+      onOpen={load}
+      contentStyle={{ padding: 40 }}
+      modal
+    >
+      <div>
+        {keyboards.length > 0 ? (
+          <>
+            <h4>Your keyboards:</h4>
+            <ul>
+              {keyboards.map(({ hash, name }) => (
+                <li key={hash}>
+                  <a href={`${window.location}?hash=${hash}`}>{name}</a>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+      </div>
+    </Popup>
+  );
+}
+
 class Player extends React.Component {
   constructor() {
     super();
@@ -163,6 +232,8 @@ class Player extends React.Component {
   }
 
   downHandler = ({ key }) => {
+    if (globalState.sharingFocused) return;
+
     const lowerKey = _.toLower(key);
     if (!_.includes(ALL_KEYS, lowerKey)) return;
     if (globalState.pressedKeys[lowerKey]) return;
@@ -194,6 +265,8 @@ class Player extends React.Component {
   };
 
   upHandler = ({ key }) => {
+    if (globalState.sharingFocused) return;
+
     const lowerKey = _.toLower(key);
     if (!_.includes(ALL_KEYS, lowerKey)) return;
     if (!globalState.pressedKeys[lowerKey]) return;
@@ -377,6 +450,7 @@ export default () => {
           </div>
           <Jorge />
           <Share />
+          <Keyboards />
         </div>
       )}
     </Player>
