@@ -1,3 +1,4 @@
+/* eslint no-restricted-globals: 0 */
 import _ from "lodash";
 import IPFS from "ipfs";
 import blobToBuffer from "blob-to-buffer";
@@ -61,10 +62,7 @@ async function handleShare() {
     content: IPFS.Buffer.from(content)
   });
 
-  postMessage({
-    message: "share",
-    hash: shareFile[0].hash
-  });
+  postMessage({ message: "share", hash: shareFile[0].hash });
 }
 
 async function handleDownload(hash) {
@@ -93,9 +91,7 @@ async function handleDownload(hash) {
     })
   );
 
-  postMessage({
-    message: "download"
-  });
+  postMessage({ message: "download" });
 }
 
 addEventListener("message", async event => {
