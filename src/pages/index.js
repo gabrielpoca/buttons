@@ -67,7 +67,7 @@ function Share() {
       trigger={
         <button
           css={{
-            backgroundColor: "black",
+            backgroundColor: "#2D2D2D",
             color: "white",
             fontSize: 20,
             padding: `10px 20px`,
@@ -161,7 +161,7 @@ function Keyboards() {
       trigger={
         <button
           css={{
-            backgroundColor: "black",
+            backgroundColor: "#2D2D2D",
             color: "white",
             fontSize: 20,
             padding: `10px 20px`,
