@@ -1,109 +1,76 @@
-import _ from "lodash";
-import IPFS from "ipfs";
-import blobToBuffer from "blob-to-buffer";
+import MyWorker from "./test.worker";
 
-import db from "./db";
+let workerReady = false;
+const worker = new MyWorker();
 
-const options = {
-  EXPERIMENTAL: {
-    pubsub: true
+worker.addEventListener(
+  "message",
+  ({ data }) => {
+    if (data.message === "ready") workerReady = true;
   },
-  repo: "ipfs-buttons",
-  config: {
-    Addresses: {
-      Swarm: [
-        "/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star"
-      ]
-    }
+  {
+    once: true
   }
-};
-
-let node;
+);
 
 export const share = async () => {
-  if (!node) {
-    node = new IPFS(options);
-
+  if (!workerReady) {
     await new Promise(resolve => {
-      node.once("start", async () => {
-        resolve();
-      });
+      const check = () => {
+        if (workerReady) resolve();
+        else setTimeout(check, 200);
+      };
+
+      setTimeout(check, 200);
     });
   }
 
-  const keys = await db.keys.toArray();
+  console.log("starting share");
 
-  const files = await Promise.all(
-    keys.map(async key => {
-      const buffer = await new Promise((resolve, reject) => {
-        blobToBuffer(key.blob, (err, buffer) => {
-          if (err) return reject(err);
-          resolve(buffer);
-        });
-      });
+  worker.postMessage({ message: "share" });
 
-      return {
-        iFile: (await node.add({
-          path: key.key,
-          content: buffer
-        }))[0],
-        key: key.key
-      };
-    })
-  );
-
-  console.log(files);
-
-  const content = _.flatten(files)
-    .map(f => `${f.key}:${f.iFile.hash}`)
-    .join(",");
-
-  const shareFile = await node.add({
-    path: "buttons",
-    content: IPFS.Buffer.from(content)
+  return new Promise((resolve, reject) => {
+    worker.addEventListener(
+      "message",
+      ({ data }) => {
+        if (data.message === "share") resolve(data.hash);
+        else reject("invalid message received");
+      },
+      {
+        once: true
+      }
+    );
   });
-
-  return shareFile[0].hash;
 };
 
 export const download = async hash => {
-  if (!node) {
-    node = new IPFS(options);
-
+  if (!workerReady) {
     await new Promise(resolve => {
-      node.once("start", async () => {
-        resolve();
-      });
+      const check = () => {
+        if (workerReady) resolve();
+        else setTimeout(check, 200);
+      };
+
+      setTimeout(check, 200);
     });
   }
 
-  const file = (await node.get(hash))[0];
+  console.log("starting download");
 
-  const files = file.content
-    .toString()
-    .split(",")
-    .map(part => {
-      const [key, hash] = part.split(":");
+  worker.postMessage({ message: "download", hash });
 
-      return {
-        key,
-        hash
-      };
-    });
-
-  await Promise.all(
-    files.map(async file => {
-      const gotFile = (await node.get(file.hash))[0];
-      console.log(gotFile.content.buffer);
-
-      db.keys.put({
-        blob: new Blob([gotFile.content.buffer], {
-          type: "audio/ogg; codecs=opus"
-        }),
-        key: file.key
-      });
-    })
-  );
-
-  window.location.reload();
+  return new Promise((resolve, reject) => {
+    worker.addEventListener(
+      "message",
+      ({ data }) => {
+        if (data.message === "download") {
+          window.location.reload();
+          resolve();
+        } else reject("invalid message received");
+      },
+      {
+        once: true
+      }
+    );
+  });
 };
